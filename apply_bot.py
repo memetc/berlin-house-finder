@@ -15,7 +15,7 @@ import os
 # Import configs
 from config import IMMOSCOUT_EMAIL, IMMOSCOUT_PASSWORD, USER_PHONE_NUMBER
 from message_generator import generate_ai_message
-from slack_notifier import send_slack_message
+from telegram_notifier import send_telegram_message
 
 # --- FILES ---
 INPUT_FILE = "filtered_results.json"
@@ -188,14 +188,21 @@ def apply_to_listings(driver, listings):
     # --- 1. LOAD TRACKER ---
     applied_links = load_applied_listings()
     print(f"\n🚀 Starting Application Run. Already applied to {len(applied_links)} listings.")
-
-    for i, listing in enumerate(listings):
+    i = 0
+    choice = "start"
+    while i < len(listings):
+    # for i, listing in enumerate(listings):
+        listing = listings[i]
         url = listing['link']
         title = listing['title']
         
         # --- 2. CHECK IF ALREADY APPLIED ---
         if url in applied_links:
             print(f"⏭️  Skipping [{i+1}/{len(listings)}] (Already Applied): {title}")
+            if choice != 'b':
+                i += 1
+            elif choice == 'b':
+                i -= 1
             continue
 
         price = listing.get('warm_miete_numeric', listing.get('cold_miete', 'N/A'))
@@ -213,6 +220,10 @@ def apply_to_listings(driver, listings):
         # Check if ANY of the keywords exist in the lowercase title
         if any(keyword in title.lower() for keyword in swap_keywords):
             print(f"⚠️ Skipping Listing {i+1}: Swap/Trade offer detected ({title})")
+            if choice != 'b':
+                i += 1
+            elif choice == 'b':
+                i -= 1
             continue
 
         # --- 3. NAVIGATE & DISPLAY INFO ---
@@ -229,22 +240,36 @@ def apply_to_listings(driver, listings):
         time.sleep(1.5)
 
         # --- 4. MANUAL INPUT PROMPT ---
-        choice = input("👉 Apply (y), Skip (n), or Send to Slack (t)? ").strip().lower()
+        prompt_text = "👉 Options: (y) Apply, (n) Skip, (t) Slack, (b) Back: "
+        choice = input(prompt_text).strip().lower()
+        # Option B: BACK
+        if choice == 'b':
+            if i > 0:
+                print("   ⬅️  Going back to previous listing...")
+                i -= 1 # Move index back
+                continue # Restart loop at new index
+            else:
+                print("   ⚠️  Already at the start of the list.")
+                # Do not change index, just re-ask
+                continue 
 
-        if choice == 't':
-            # --- SEND TO SLACK LOGIC ---
+        # Option T: SLACK
+        elif choice == 't':
             print("   📨 Sending listing to Slack...")
-            slack_msg = (
+            msg = (
                 f"🏠 *{title}*\n"
                 f"📍 {address}\n"
                 f"💰 {price}\n"
                 f"🔗 {url}"
             )
-            send_slack_message(slack_msg)
+            send_telegram_message(msg)
             print("   ⏭️  Skipping application for now.")
-            continue # Move to the next listing after sending to Slack
+            i += 1 # Move forward
+            continue
 
+        # Option N: SKIP
         elif choice != 'y':
+            i += 1 # Move forward
             print("   ⏭️  Skipping (User rejected).")
             continue
 
@@ -310,7 +335,7 @@ def apply_to_listings(driver, listings):
             
         except Exception as e:
             print(f"   ❌ Error applying to listing: {e}")
-
+        i += 1
         time.sleep(random.uniform(2, 4))
 
 if __name__ == '__main__':
