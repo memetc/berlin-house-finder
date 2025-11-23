@@ -1,6 +1,6 @@
 house_finder_venv/
 __pycache__/
 .DS_Store
-my_config.py
+config.py
 *.json
 geckodriver.log

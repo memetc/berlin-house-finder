@@ -21,6 +21,42 @@ TARGET_DISTRICTS = [
     "Tempelhof"
 ]
 
+TARGET_DISTRICTS = [
+    # --- Core / Trendy / Central ---
+    "Kreuzberg",
+    "Neukölln",
+    "Friedrichshain",
+    "Mitte",
+    "Prenzlauer Berg",
+    "Schöneberg",
+    "Tempelhof",
+    
+    # --- West / Upscale / Green (Very Good Connections) ---
+    "Charlottenburg",
+    "Wilmersdorf",
+    "Steglitz",
+    "Friedenau",
+    "Schmargendorf",
+    "Westend",
+    "Halensee",
+    
+    # --- Up-and-Coming / Central / Affordable ---
+    "Wedding",
+    "Moabit",
+    "Gesundbrunnen",
+    
+    # --- Nice Residential / Water / Green (S-Bahn Connected) ---
+    "Pankow",
+    "Weissensee",
+    "Treptow",
+    "Alt-Treptow",
+    "Plänterwald",
+    "Rummelsburg",
+    "Karlshorst",
+    "Köpenick",  # A bit further out, but very nice (water/forest)
+    "Lichterfelde"
+]
+
 # 3. Price Preferences (Warm Miete)
 # Set to None if you don't want a limit.
 MAX_WARM_RENT = 1400  

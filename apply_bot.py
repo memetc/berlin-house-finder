@@ -15,6 +15,7 @@ import os
 # Import configs
 from config import IMMOSCOUT_EMAIL, IMMOSCOUT_PASSWORD, USER_PHONE_NUMBER
 from message_generator import generate_ai_message
+from slack_notifier import send_slack_message
 
 # --- FILES ---
 INPUT_FILE = "filtered_results.json"
@@ -228,11 +229,24 @@ def apply_to_listings(driver, listings):
         time.sleep(1.5)
 
         # --- 4. MANUAL INPUT PROMPT ---
-        choice = input("👉 Apply to this flat? (y/n): ").strip().lower()
+        choice = input("👉 Apply (y), Skip (n), or Send to Slack (t)? ").strip().lower()
 
-        if choice != 'y':
-            print("⏭️  Skipping (User rejected).")
-            continue 
+        if choice == 't':
+            # --- SEND TO SLACK LOGIC ---
+            print("   📨 Sending listing to Slack...")
+            slack_msg = (
+                f"🏠 *{title}*\n"
+                f"📍 {address}\n"
+                f"💰 {price}\n"
+                f"🔗 {url}"
+            )
+            send_slack_message(slack_msg)
+            print("   ⏭️  Skipping application for now.")
+            continue # Move to the next listing after sending to Slack
+
+        elif choice != 'y':
+            print("   ⏭️  Skipping (User rejected).")
+            continue
 
         # ============================================================
         # IF 'Y': PROCEED WITH FORM FILLING
